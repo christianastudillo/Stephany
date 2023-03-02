@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I LOVE</title>
+</head>
+<script>
+    window.addEventListener('load', onWndLoad, false);
+
+    function onWndLoad() {
+
+        var slider = document.querySelector('.slider');
+        var sliders = slider.children;
+
+        var initX = null;
+        var transX = 0;
+        var rotZ = 0;
+        var transY = 0;
+
+        var curSlide = null;
+
+        var Z_DIS = 50;
+        var Y_DIS = 10;
+        var TRANS_DUR = 0.4;
+
+        var images = document.querySelectorAll('img');
+        for (var i = 0; i < images.length; i++) {
+            images[i].onmousemove = function (e) {
+                e.preventDefault()
+
+            }
+            images[i].ondragstart = function (e) {
+                return false;
+
+            }
+        }
+
+        function init() {
+
+            var z = 0, y = 0;
+
+            for (var i = sliders.length - 1; i >= 0; i--) {
+                sliders[i].style.transform = 'translateZ(' + z + 'px) translateY(' + y + 'px)';
+
+                z -= Z_DIS;
+                y += Y_DIS;
+            }
+
+            attachEvents(sliders[sliders.length - 1]);
+
+        }
+        function attachEvents(elem) {
+            curSlide = elem;
+
+            curSlide.addEventListener('mousedown', slideMouseDown, false);
+            curSlide.addEventListener('touchstart', slideMouseDown, false);
+        }
+        init();
+        function slideMouseDown(e) {
+
+            if (e.touches) {
+                initX = e.touches[0].clientX;
+            }
+            else {
+                initX = e.pageX;
+            }
+
+            document.addEventListener('mousemove', slideMouseMove, false);
+            document.addEventListener('touchmove', slideMouseMove, false);
+
+            document.addEventListener('mouseup', slideMouseUp, false);
+            document.addEventListener('touchend', slideMouseUp, false);
+        }
+        var prevSlide = null;
+
+        function slideMouseMove(e) {
+            var mouseX;
+
+            if (e.touches) {
+                mouseX = e.touches[0].clientX;
+            }
+            else {
+                mouseX = e.pageX;
+            }
+
+            transX += mouseX - initX;
+            rotZ = transX / 20;
+
+            transY = -Math.abs(transX / 15);
+
+            curSlide.style.transition = 'none';
+            curSlide.style.webkitTransform = 'translateX(' + transX + 'px)' + ' rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            curSlide.style.transform = 'translateX(' + transX + 'px)' + ' rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            var j = 1;
+            //remains elements
+            for (var i = sliders.length - 2; i >= 0; i--) {
+
+                sliders[i].style.webkitTransform = 'translateX(' + transX / (2 * j) + 'px)' + ' rotateZ(' + rotZ / (2 * j) + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transform = 'translateX(' + transX / (2 * j) + 'px)' + ' rotateZ(' + rotZ / (2 * j) + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transition = 'none';
+                j++;
+            }
+
+            initX = mouseX;
+            e.preventDefault();
+            if (Math.abs(transX) >= curSlide.offsetWidth - 30) {
+
+                document.removeEventListener('mousemove', slideMouseMove, false);
+                document.removeEventListener('touchmove', slideMouseMove, false);
+                curSlide.style.transition = 'ease 0.2s';
+                curSlide.style.opacity = 0;
+                prevSlide = curSlide;
+                attachEvents(sliders[sliders.length - 2]);
+                slideMouseUp();
+                setTimeout(function () {
+
+                    slider.insertBefore(prevSlide, slider.firstChild);
+
+                    prevSlide.style.transition = 'none';
+                    prevSlide.style.opacity = '1';
+                    slideMouseUp();
+
+                }, 201);
+
+                return;
+            }
+        }
+        function slideMouseUp() {
+            transX = 0;
+            rotZ = 0;
+            transY = 0;
+
+            curSlide.style.transition = 'cubic-bezier(0,1.95,.49,.73) ' + TRANS_DUR + 's';
+
+            curSlide.style.webkitTransform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            curSlide.style.transform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + transY + 'px)';
+            //remains elements
+            var j = 1;
+            for (var i = sliders.length - 2; i >= 0; i--) {
+                sliders[i].style.transition = 'cubic-bezier(0,1.95,.49,.73) ' + TRANS_DUR / (j + 0.9) + 's';
+                sliders[i].style.webkitTransform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+                sliders[i].style.transform = 'translateX(' + transX + 'px)' + 'rotateZ(' + rotZ + 'deg)' + ' translateY(' + (Y_DIS * j) + 'px)' + ' translateZ(' + (-Z_DIS * j) + 'px)';
+
+                j++;
+            }
+
+            document.removeEventListener('mousemove', slideMouseMove, false);
+            document.removeEventListener('touchmove', slideMouseMove, false);
+
+        }
+
+
+    }
+</script>
+<style>
+    html,
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container {
+        height: 100vh;
+        width: 100%;
+        background-image: url(https://cdn.pixabay.com/photo/2018/01/22/08/36/sunset-3098422_960_720.jpg);
+        background-position: center;
+        background-size: cover;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .slider div p {
+        color: hwb(123 0% 0%);
+        /* position: absolute; */
+        bottom: -65px;
+        font-family: fantasy;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .slider {
+
+        /* -webkit-animation: animation ease 1s; */
+        animation-delay: .8s;
+        animation-fill-mode: backwards;
+
+        margin: 60px auto 0 auto;
+        height: 360px;
+        width: 240px;
+        padding: 40px;
+        top: 100px;
+
+        perspective: 1000px;
+        transition: ease-in-out .2s;
+        /* -webkit-transform:rotateX(45deg);
+             -webkit-transform-stye:preserve-3d;
+                 position:absolute; */
+    }
+
+    /* .slider:active{ -webkit-transform:rotateZ(10deg);} */
+
+    .slide img {
+        text-align: center;
+        width: 100%;
+        height: 80%; 
+        -webkit-user-drag: none;
+        /* user-drag: none; */
+        -moz-user-drag: none;
+        border-radius: 2px;
+    }
+
+    .slide {
+
+        -webkit-user-select: none;
+        user-select: none;
+        -moz-user-select: none;
+        position: absolute;
+        height: 95%;
+        width: 80%;
+
+        box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.3);
+        background: #fcfcfc;
+        -webkit-transform-style: preserve-3d;
+        transform-style: preserve-3d;
+        -moz-transform-style: preserve-3d;
+        text-align: center;
+        /* overflow:hidden; */
+        border: 12px white solid;
+        box-sizing: border-box;
+        border-bottom: 55px white solid;
+        border-radius: 5px;
+
+
+
+    }
+
+    .transition {
+        -webkit-transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+        -moz-transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+        transition: cubic-bezier(0, 1.95, .49, .73) .4s;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="slider">
+            <div class="slide"><img src="img/img0.gif" />
+                <p><a href="https://www.youtube.com/watch?v=AtE8zTJutVQ">Me gustas❤️</a> </p>
+            </div>
+            <div class="slide"><img src="img/img1.gif" />
+                <p>Desde un principio me gusto tu voz, tu sonrisa, tu cabello, tu forma de ser y en realidad todo de ti❤️</p>
+            </div>
+            <div class="slide"><img src="img/img2.gif" />
+                <p>Cada vez que escucho o leo tu nombre, se me dibuja una sonrisa en el rostro ❤️</p>
+            </div>
+            <div class="slide"><img src="img/img3.gif" />
+                <p>Desde que te conocí te me hiciste una chica muy hermosa❤️</p>
+            </div>
+            <div class="slide"><img src="img/img4.gif" />
+                <p>Quería decirte algo...</p>
+            </div>
+            <div class="slide"><img src="img/img5.gif" />
+                <p>Hola niña bonita❤️</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
